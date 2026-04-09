@@ -2,15 +2,19 @@
 import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import GUI from 'lil-gui';
-        import { addWaveControls } from './lil-gui/wave-controls.js';
-        import { addZoomControls } from './lil-gui/zoom-controls.js';
-        import { devMode } from './lil-gui/gui-config.js';
+        import { addWaveControls } from '../lil-gui/wave-controls.js';
+        import { addZoomControls } from '../lil-gui/zoom-controls.js';
+        import { devMode } from '../lil-gui/gui-config.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
         // --- Core Variables ---
         let scene, camera, renderer, controls;
         let sceneRoot;
         let ambientLight, dirLight, backLight;
         let instancedMesh;
+        let composer, renderPass, bloomPass;
         let currentImage = null;
         let imgData = null;
         let gridW = 0, gridH = 0;
@@ -24,7 +28,7 @@ import * as THREE from 'three';
         const config = {
             defaultResolution: 150,
             maxResolution: 200,
-            defaultImagePath: 'image/logo-menu-pc.svg',
+            defaultImagePath: '../image/logo-menu-pc.svg',
             defaultBgColor: '#111111'
         };
 
@@ -60,6 +64,11 @@ import * as THREE from 'three';
             upscaleEnabled: false,
             upscaleFactor: 2,
             imageSmoothing: false
+            ,
+            // Bloom / postprocessing
+            bloomStrength: 0.0,
+            bloomRadius: 0.4,
+            bloomThreshold: 0.85
         };
 
         // --- Geometries Dictionary ---
@@ -122,6 +131,18 @@ import * as THREE from 'three';
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
+
+            // Postprocessing composer + bloom
+            try {
+                renderPass = new RenderPass(scene, camera);
+                bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomRadius, params.bloomThreshold);
+                composer = new EffectComposer(renderer);
+                composer.addPass(renderPass);
+                composer.addPass(bloomPass);
+            } catch (e) {
+                console.warn('Postprocessing not available:', e);
+                composer = null;
+            }
 
             // Camera controls (orbital)
             controls = new OrbitControls(camera, renderer.domElement);
@@ -200,6 +221,11 @@ import * as THREE from 'three';
 
                 addWaveControls(gui, params);
                 addZoomControls(gui, params, { apply: applyZoom, reset: resetZoom });
+                // Postprocessing controls (minimal)
+                const postFolder = gui.addFolder('Post Processing');
+                postFolder.add(params, 'bloomStrength', 0, 3, 0.01).name('Bloom Strength').onChange(v => { if (bloomPass) bloomPass.strength = v; });
+                postFolder.add(params, 'bloomRadius', 0, 1, 0.01).name('Bloom Radius').onChange(v => { if (bloomPass) bloomPass.radius = v; });
+                postFolder.add(params, 'bloomThreshold', 0, 1, 0.01).name('Bloom Threshold').onChange(v => { if (bloomPass) bloomPass.threshold = v; });
             } else {
                 // Developer/full UI: all folders and controls
                 const fileFolder = gui.addFolder('Image Loading');
@@ -228,6 +254,11 @@ import * as THREE from 'three';
 
                 addWaveControls(gui, params);
                 addZoomControls(gui, params, { apply: applyZoom, reset: resetZoom });
+                // Postprocessing controls (developer)
+                const postFolder = gui.addFolder('Post Processing');
+                postFolder.add(params, 'bloomStrength', 0, 3, 0.01).name('Bloom Strength').onChange(v => { if (bloomPass) bloomPass.strength = v; });
+                postFolder.add(params, 'bloomRadius', 0, 1, 0.01).name('Bloom Radius').onChange(v => { if (bloomPass) bloomPass.radius = v; });
+                postFolder.add(params, 'bloomThreshold', 0, 1, 0.01).name('Bloom Threshold').onChange(v => { if (bloomPass) bloomPass.threshold = v; });
             }
         }
 
@@ -398,7 +429,7 @@ import * as THREE from 'three';
             }
 
             controls.update();
-            renderer.render(scene, camera);
+            if (composer) composer.render(); else renderer.render(scene, camera);
         }
 
         // --- Event Handlers and Utilities ---
@@ -406,6 +437,7 @@ import * as THREE from 'three';
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
             // Check whether to show rotate overlay on small screens
             checkRotateOverlay();
         }
