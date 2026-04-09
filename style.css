@@ -1,0 +1,188 @@
+body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #111;
+            font-family: sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #fileInput {
+            display: none;
+        }
+        #dragOverlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #dragOverlay.active {
+            opacity: 1;
+        }
+
+        /* Rotate overlay for small portrait devices */
+        #rotateOverlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            z-index: 9999;
+            font-size: 1.1rem;
+        }
+
+        /* Utility: screen-reader-only (visible to assistive tech) */
+        .sr-only {
+            position: absolute !important;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0);
+            white-space: nowrap; border: 0;
+        }
+
+        /* JS-controlled visibility for rotate overlay */
+        #rotateOverlay.is-visible { display: flex; }
+
+        /* Panel styling inspired by bee.html */
+        #rotateOverlay .panel {
+            background: rgba(10,16,28,0.78);
+            border-radius: 12px;
+            padding: 22px 20px;
+            max-width: 86%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #rotateOverlay .icon {
+            font-size: 46px;
+            line-height: 1;
+        }
+
+        #rotateOverlay .title {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        #rotateOverlay .desc {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            line-height: 1.35;
+        }
+
+        /* Hide floating GUI on mobile portrait when overlay is active */
+        .lil-gui.mobile-ui { display: none !important; }
+
+        /* Small informational hints (faded) */
+        .info {
+            position: fixed;
+            z-index: 1200;
+            color: #fff;
+            background: rgba(0,0,0,0.24);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            line-height: 1.25;
+            opacity: 0.7;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            pointer-events: none;
+        }
+
+        .info-left { left: 14px; bottom: 14px; }
+        .info-right { right: 14px; bottom: 14px; text-align: right; min-width: 120px; }
+
+        .info-desktop { display: flex; align-items: center; gap: 8px; }
+        .info-mobile { display: none; }
+
+        .mouse-icon { font-size: 1.15rem; }
+
+        /* Show mobile hints on coarse pointer devices (touch) and small screens */
+        @media (pointer: coarse), (max-width: 720px) {
+            .info-mobile { display: block; }
+            .info-desktop { display: none; }
+        }
+
+        /* For small devices in landscape, move the mobile hint to top-left */
+        @media (orientation: landscape) and (max-width: 1024px) {
+            .info-right {
+                right: auto;
+                left: 14px;
+                top: 14px;
+                bottom: auto;
+                text-align: left;
+                min-width: unset;
+            }
+
+            /* Ensure the left helper stays visible but not overlapping */
+            .info-left {
+                left: 14px;
+                bottom: 14px;
+            }
+        }
+
+        /* Slightly increase visibility on hover for desktop (non-interactive) */
+        @media (pointer: fine) {
+            .info:hover { opacity: 0.92; }
+        }
+
+        /* Show rotate message on narrow portrait screens */
+        @media (max-width: 720px) and (orientation: portrait) {
+            #rotateOverlay { display: flex; }
+        }
+
+        /* Auto-rotate the canvas container (visual landscape) */
+        #canvas-container.rotated {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            width: 100vh; /* swapped */
+            height: 100vw; /* swapped */
+            transform: translate(-50%, -50%) rotate(90deg);
+            transform-origin: center center;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        #canvas-container.rotated canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        /* Small button to unlock interaction when rotated */
+        .rotate-unlock-btn {
+            position: fixed;
+            right: 14px;
+            top: 14px;
+            z-index: 1300;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .rotate-unlock-btn:active { transform: translateY(1px); }

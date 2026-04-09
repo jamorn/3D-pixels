@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="#"><!-- fix favicon.ico -->
+    <title>3D Forms as Pixels</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+                "lil-gui": "https://unpkg.com/lil-gui@0.19.1/dist/lil-gui.esm.min.js"
+            }
+        }
+    </script>
+
+    <div id="dragOverlay">Drag and Drop Image Here</div>
+    <div id="rotateOverlay" aria-live="polite" aria-hidden="true">
+      <div class="panel">
+        <span class="icon">📱↻</span>
+        <div class="title">หมุนเครื่องเป็นแนวนอน</div>
+        <div class="title">หมุนแล้วกด ↻ อีกครั้ง </div>
+        <div class="desc">บนมือถือและจอเล็ก ฉากนี้จะแสดงแบบแนวนอนเพื่อให้เห็นเวทีและพื้นที่ได้ครบกว่า</div>
+      </div>
+    </div>
+    <div id="canvas-container"></div>
+    <!-- Informational hints (bottom-left / bottom-right) -->
+    <div class="info info-left" id="infoLeft" aria-hidden="false">ท่านสามารถเปลี่ยนรูปภาพได้จากได้จากเมนู Upload</div>
+    <div class="info info-right" id="infoRight" aria-hidden="false">
+      <div class="info-mobile">
+        <div>1 นิ้วหมุน</div>
+        <div>2 นิ้ว zoom</div>
+      </div>
+      <div class="info-desktop">
+        <span class="mouse-icon">🖱️</span>
+        <span>zoom · pan · หมุน</span>
+      </div>
+    </div>
+    <label for="fileInput" class="sr-only" id="fileInputLabel">Upload image</label>
+    <input type="file" id="fileInput" accept="image/*" title="Upload image" aria-label="Upload image">
+    <script type="module" src="./script.js"></script>
+
+  </body>
+  
+</html>
