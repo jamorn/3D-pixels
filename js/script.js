@@ -66,9 +66,9 @@ import * as THREE from 'three';
             imageSmoothing: false
             ,
             // Bloom / postprocessing
-            bloomStrength: 0.0,
+            bloomStrength: 0.9,
             bloomRadius: 0.4,
-            bloomThreshold: 0.85
+            bloomThreshold: 0.05
         };
 
         // --- Geometries Dictionary ---
